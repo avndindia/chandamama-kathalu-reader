@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>చందమామ కథలు | Chandamama Kathalu Reader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1419;
+            --card: #1a2332;
+            --accent: #f4c430;
+            --text: #e8eaed;
+            --muted: #9aa0a6;
+        }
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Noto Sans Telugu', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+            background: linear-gradient(135deg, #1a2332 0%, #0d1117 100%);
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--accent);
+        }
+        .subtitle {
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .year-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+        .year-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #2a3544;
+        }
+        .year-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(244, 196, 48, 0.15);
+            border-color: var(--accent);
+        }
+        .year-card h3 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+        .month-list {
+            display: none;
+            margin-top: 2rem;
+        }
+        .month-list.active {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .month-item {
+            background: var(--card);
+            padding: 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text);
+            display: block;
+            transition: background 0.2s;
+        }
+        .month-item:hover {
+            background: #243044;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+            font-size: 0.85rem;
+            border-top: 1px solid #2a3544;
+            margin-top: 3rem;
+        }
+        .back-btn {
+            display: none;
+            margin-bottom: 1rem;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>చందమామ కథలు</h1>
+        <p class="subtitle">Chandamama Kathalu — Telugu Magazine Archive Reader</p>
+        <p class="subtitle">Issues from Internet Archive</p>
+    </header>
+
+    <div class="container">
+        <button class="back-btn" id="backBtn" onclick="showYears()">← Back to Years</button>
+        <div id="yearGrid" class="year-grid"></div>
+        <div id="monthList" class="month-list"></div>
+    </div>
+
+    <footer>
+        <p>Archival reader for educational and personal use. Content sourced from <a href="https://archive.org/details/chandamama_telugu_all" style="color: var(--accent);">Internet Archive</a>.</p>
+        <p>Not affiliated with original publishers. If you hold rights and have concerns, please contact.</p>
+        <p>Missing issues? Help complete the collection on Internet Archive.</p>
+    </footer>
+
+    <script>
+        // Sample catalog - expand with full list
+        const catalog = {
+            "1947": ["Chandamama-1947_07.pdf", "Chandamama-1947_08.pdf", "Chandamama-1947_09.pdf", "Chandamama-1947-10.pdf", "Chandamama-1947-11.pdf", "Chandamama-1947-12.pdf"],
+            "1948": ["Chandamama-1948_01.pdf", "Chandamama-1948_02.pdf", "Chandamama-1948_03.pdf", "Chandamama-1948_04.pdf", "Chandamama-1948_05.pdf", "Chandamama-1948_06.pdf", "Chandamama-1948_07.pdf", "Chandamama-1948_08.pdf", "Chandamama-1948_09.pdf", "Chandamama-1948-10.pdf", "Chandamama-1948-11.pdf", "Chandamama-1948-12.pdf"],
+            // Add more years as needed. Full list can be generated from IA directory.
+        };
+
+        const monthNames = {
+            "01": "January", "02": "February", "03": "March", "04": "April",
+            "05": "May", "06": "June", "07": "July", "08": "August",
+            "09": "September", "10": "October", "11": "November", "12": "December"
+        };
+
+        function extractMonth(filename) {
+            const match = filename.match(/(\d{2})\.pdf$/);
+            return match ? match[1] : "00";
+        }
+
+        function showYears() {
+            document.getElementById('yearGrid').style.display = 'grid';
+            document.getElementById('monthList').classList.remove('active');
+            document.getElementById('backBtn').style.display = 'none';
+        }
+
+        function showMonths(year) {
+            const files = catalog[year] || [];
+            const monthList = document.getElementById('monthList');
+            monthList.innerHTML = '';
+            files.sort().forEach(file => {
+                const month = extractMonth(file);
+                const a = document.createElement('a');
+                a.href = `viewer.html?file=${encodeURIComponent(file)}`;
+                a.className = 'month-item';
+                a.textContent = `${monthNames[month] || month} (${file})`;
+                monthList.appendChild(a);
+            });
+            document.getElementById('yearGrid').style.display = 'none';
+            monthList.classList.add('active');
+            document.getElementById('backBtn').style.display = 'inline-block';
+        }
+
+        function init() {
+            const grid = document.getElementById('yearGrid');
+            Object.keys(catalog).sort().forEach(year => {
+                const card = document.createElement('div');
+                card.className = 'year-card';
+                card.innerHTML = `<h3>${year}</h3><p style="margin:0.5rem 0 0;color:var(--muted);">${catalog[year].length} issues</p>`;
+                card.onclick = () => showMonths(year);
+                grid.appendChild(card);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
