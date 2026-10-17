@@ -1,34 +1,81 @@
 <!DOCTYPE html>
-<html lang="te">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>చందమామ కథలు</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600&display=swap" rel="stylesheet">
-<style>
-body{margin:0;font-family:'Noto Sans Telugu',sans-serif;background:#0f172a;color:#f1f5f9;padding:20px}
-h1{text-align:center;color:#fef3c7}
-#search{display:block;margin:10px auto;padding:10px;width:300px;border-radius:6px;border:1px solid #334155;background:#1e293b;color:#fff}
-.years{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-width:1000px;margin:20px auto}
-.year{background:#1e293b;padding:12px;border-radius:8px;cursor:pointer;text-align:center}
-.year:hover{background:#334155}
-.months{display:none;margin-top:8px}
-.year.open .months{display:block}
-.month{display:block;padding:4px;background:#0f172a;margin:2px 0;text-decoration:none;color:#f1f5f9;border-radius:4px}
-.month:hover{color:#fbbf24}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>చందమామ కథలు | Chandamama Kathalu Reader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0f1419; --card:#1a2332; --accent:#f4c430; --text:#e8eaed; --muted:#9aa0a6; }
+    body { margin:0; font-family:'Inter','Noto Sans Telugu',sans-serif; background:var(--bg); color:var(--text); }
+    header { text-align:center; padding:3rem 1rem 2rem; background:linear-gradient(135deg,#1a2332 0%,#0d1117 100%); }
+    h1 { font-size:2.5rem; margin:0; color:var(--accent); }
+    .subtitle { color:var(--muted); margin-top:0.5rem; }
+    .container { max-width:1200px; margin:0 auto; padding:2rem 1rem; }
+    .year-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:1rem; }
+    .year-card { background:var(--card); border-radius:12px; padding:1.5rem; text-align:center; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; border:1px solid #2a3544; }
+    .year-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(244,196,48,0.15); border-color:var(--accent); }
+    .month-list { display:none; margin-top:2rem; }
+    .month-list.active { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem; }
+    .month-item { background:var(--card); padding:1rem; border-radius:8px; text-decoration:none; color:var(--text); display:block; transition:background 0.2s; }
+    .month-item:hover { background:#243044; }
+    footer { text-align:center; padding:2rem; color:var(--muted); font-size:0.85rem; border-top:1px solid #2a3544; margin-top:3rem; }
+    .back-btn { display:none; margin-bottom:1rem; background:var(--accent); color:#000; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600; }
+  </style>
 </head>
 <body>
-<h1>🌙 చందమామ కథలు</h1>
-<p style="text-align:center;color:#94a3b8">1947–2002 • 646 issues • Cloudflare ready</p>
-<input id="search" placeholder="Year (e.g. 1960)">
-<div class="years" id="years"></div>
-<script>
-const months=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-let catalog={};
-async function load(){const r=await fetch('chandamama_catalog.json');catalog=await r.json();render();}
-function render(f=''){const el=document.getElementById('years');el.innerHTML='';Object.keys(catalog).sort((a,b)=>b-a).forEach(y=>{if(f&&!y.includes(f))return;const iss=catalog[y];const d=document.createElement('div');d.className='year';d.innerHTML=`<h2>${y}</h2><small>${iss.length}</small><div class="months">${iss.map(i=>`<a class="month" href="viewer.html?file=${encodeURIComponent(i.file)}">${months[i.month]}</a>`).join('')}</div>`;d.onclick=e=>{if(e.target.tagName!='A')d.classList.toggle('open')};el.appendChild(d);});}
-document.getElementById('search').oninput=e=>render(e.target.value);load();
-</script>
+  <header>
+    <h1>చందమామ కథలు</h1>
+    <p class="subtitle">Chandamama Kathalu — Telugu Magazine Archive Reader</p>
+    <p class="subtitle">Streaming from Internet Archive (R2 support ready)</p>
+  </header>
+  <div class="container">
+    <button class="back-btn" id="backBtn" onclick="showYears()">← Back to Years</button>
+    <div id="yearGrid" class="year-grid"></div>
+    <div id="monthList" class="month-list"></div>
+  </div>
+  <footer>
+    <p>Archival reader for educational and personal use. Content from <a href="https://archive.org/details/chandamama_telugu_all" style="color:var(--accent);">Internet Archive</a>.</p>
+    <p>Not affiliated with original publishers. Missing issues welcome on IA.</p>
+  </footer>
+  <script>
+    let catalog = {};
+    async function loadCatalog() {
+      const res = await fetch('chandamama_catalog.json');
+      catalog = await res.json();
+      init();
+    }
+    function showYears() {
+      document.getElementById('yearGrid').style.display = 'grid';
+      document.getElementById('monthList').classList.remove('active');
+      document.getElementById('backBtn').style.display = 'none';
+    }
+    function showMonths(year) {
+      const issues = catalog[year] || [];
+      const monthList = document.getElementById('monthList');
+      monthList.innerHTML = '';
+      issues.sort((a,b) => a.month.localeCompare(b.month)).forEach(issue => {
+        const a = document.createElement('a');
+        a.href = `viewer.html?file=${encodeURIComponent(issue.filename)}`;
+        a.className = 'month-item';
+        a.textContent = `${issue.month_name || issue.month} (${issue.filename})`;
+        monthList.appendChild(a);
+      });
+      document.getElementById('yearGrid').style.display = 'none';
+      monthList.classList.add('active');
+      document.getElementById('backBtn').style.display = 'inline-block';
+    }
+    function init() {
+      const grid = document.getElementById('yearGrid');
+      Object.keys(catalog).sort().forEach(year => {
+        const card = document.createElement('div');
+        card.className = 'year-card';
+        card.innerHTML = `<h3>${year}</h3><p style="margin:0.5rem 0 0;color:var(--muted);">${catalog[year].length} issues</p>`;
+        card.onclick = () => showMonths(year);
+        grid.appendChild(card);
+      });
+    }
+    loadCatalog();
+  </script>
 </body>
 </html>
