@@ -1,1 +1,34 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>చందమామ కథలు</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Noto Sans Telugu',sans-serif;background:#0f172a;color:#f1f5f9;padding:20px}
+h1{text-align:center;color:#fef3c7}
+#search{display:block;margin:10px auto;padding:10px;width:300px;border-radius:6px;border:1px solid #334155;background:#1e293b;color:#fff}
+.years{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-width:1000px;margin:20px auto}
+.year{background:#1e293b;padding:12px;border-radius:8px;cursor:pointer;text-align:center}
+.year:hover{background:#334155}
+.months{display:none;margin-top:8px}
+.year.open .months{display:block}
+.month{display:block;padding:4px;background:#0f172a;margin:2px 0;text-decoration:none;color:#f1f5f9;border-radius:4px}
+.month:hover{color:#fbbf24}
+</style>
+</head>
+<body>
+<h1>🌙 చందమామ కథలు</h1>
+<p style="text-align:center;color:#94a3b8">1947–2002 • 646 issues • Cloudflare ready</p>
+<input id="search" placeholder="Year (e.g. 1960)">
+<div class="years" id="years"></div>
+<script>
+const months=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let catalog={};
+async function load(){const r=await fetch('chandamama_catalog.json');catalog=await r.json();render();}
+function render(f=''){const el=document.getElementById('years');el.innerHTML='';Object.keys(catalog).sort((a,b)=>b-a).forEach(y=>{if(f&&!y.includes(f))return;const iss=catalog[y];const d=document.createElement('div');d.className='year';d.innerHTML=`<h2>${y}</h2><small>${iss.length}</small><div class="months">${iss.map(i=>`<a class="month" href="viewer.html?file=${encodeURIComponent(i.file)}">${months[i.month]}</a>`).join('')}</div>`;d.onclick=e=>{if(e.target.tagName!='A')d.classList.toggle('open')};el.appendChild(d);});}
+document.getElementById('search').oninput=e=>render(e.target.value);load();
+</script>
+</body>
+</html>
